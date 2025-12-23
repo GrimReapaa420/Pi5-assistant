@@ -90,8 +90,15 @@ function SidebarProvider({
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-  }, [isMobile, setOpen, setOpenMobile])
+    console.log("[SIDEBAR] toggleSidebar called", { isMobile, openMobile, open })
+    if (isMobile) {
+      console.log("[SIDEBAR] Toggling MOBILE sidebar from", openMobile, "to", !openMobile)
+      return setOpenMobile((open) => !open)
+    } else {
+      console.log("[SIDEBAR] Toggling DESKTOP sidebar from", open, "to", !open)
+      return setOpen((open) => !open)
+    }
+  }, [isMobile, setOpen, setOpenMobile, openMobile, open])
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -180,9 +187,15 @@ function Sidebar({
     )
   }
 
+  console.log("[SIDEBAR] Rendering", { isMobile, openMobile, state })
+  
   if (isMobile) {
+    console.log("[SIDEBAR] Using MOBILE Sheet variant, openMobile =", openMobile)
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+      <Sheet open={openMobile} onOpenChange={(v) => {
+        console.log("[SIDEBAR] Sheet onOpenChange:", v)
+        setOpenMobile(v)
+      }}>
         <SheetContent
           data-sidebar="sidebar"
           data-slot="sidebar"

@@ -23,7 +23,7 @@ export OLED_SLEEP_TIMEOUT=$(bashio::config 'oled_sleep_timeout')
 export TEMPERATURE_UNIT=$(bashio::config 'temperature_unit')
 export DEBUG_LEVEL=$(bashio::config 'debug_level')
 export NODE_ENV=production
-export PORT=5000
+export PORT=8099
 
 bashio::log.info "Configuration:"
 bashio::log.info "  Polling interval: ${POLLING_INTERVAL}s"

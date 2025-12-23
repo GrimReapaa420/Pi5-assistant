@@ -12,6 +12,25 @@ declare module "http" {
   }
 }
 
+// Home Assistant ingress IP filtering (production only)
+// Only allow connections from HA's ingress proxy: 172.30.32.2
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    const clientIp = req.ip || req.socket.remoteAddress || "";
+    const allowedIp = "172.30.32.2";
+    
+    // Check if IP matches (handle IPv6 mapped IPv4)
+    const normalizedIp = clientIp.replace(/^::ffff:/, "");
+    
+    if (normalizedIp !== allowedIp && normalizedIp !== "127.0.0.1") {
+      console.log(`[security] Blocked connection from ${clientIp}`);
+      res.status(403).send("Forbidden");
+      return;
+    }
+    next();
+  });
+}
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {

@@ -23,6 +23,6 @@ RUN npm run build
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-EXPOSE 5000
+EXPOSE 8099
 
 CMD [ "/run.sh" ]

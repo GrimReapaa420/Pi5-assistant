@@ -65,4 +65,4 @@ bashio::log.info "Starting web server on port ${PORT}..."
 bashio::log.info "=========================================="
 
 cd /app
-exec npm run dev
+exec node dist/index.js

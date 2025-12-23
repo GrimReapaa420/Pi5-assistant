@@ -22,6 +22,15 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// Home Assistant ingress support - extract base path from X-Ingress-Path header
+app.use((req, res, next) => {
+  const ingressPath = req.headers['x-ingress-path'] as string;
+  if (ingressPath) {
+    res.locals.basePath = ingressPath;
+  }
+  next();
+});
+
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",

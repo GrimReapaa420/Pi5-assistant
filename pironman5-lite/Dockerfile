@@ -15,11 +15,13 @@ RUN npm install
 COPY client ./client
 COPY server ./server
 COPY shared ./shared
-COPY tsconfig.json vite.config.ts ./
+COPY tsconfig.json vite.config.ts drizzle.config.ts ./
+
+RUN npm run build
 
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-EXPOSE 34001
+EXPOSE 5000
 
 CMD [ "/run.sh" ]

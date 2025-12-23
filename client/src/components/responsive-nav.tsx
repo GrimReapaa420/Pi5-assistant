@@ -41,7 +41,7 @@ export function ResponsiveNav() {
   const [location] = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const isMobile = useIsMobileSimple()
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -60,22 +60,26 @@ export function ResponsiveNav() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [menuOpen])
 
-  const ThemeToggle = () => (
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark")
+  }
+
+  const ThemeToggleButton = () => (
     <Button
       size="icon"
       variant="ghost"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={toggleTheme}
       data-testid="button-theme-toggle"
     >
-      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   )
 
   if (isMobile) {
     return (
-      <header className="sticky top-0 z-50 border-b bg-background">
-        <div className="flex items-center justify-between gap-2 p-3">
-          <div className="flex items-center gap-2">
+      <header className="sticky top-0 z-50 border-b border-border bg-background" ref={menuRef}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '12px', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
             <Button
               size="icon"
               variant="ghost"
@@ -84,14 +88,14 @@ export function ResponsiveNav() {
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <span className="font-semibold text-sm">Pironman5 Lite</span>
+            <span style={{ fontWeight: 600, fontSize: '14px' }}>Pironman5 Lite</span>
           </div>
-          <ThemeToggle />
+          <ThemeToggleButton />
         </div>
         
         {menuOpen && (
-          <div ref={menuRef} className="border-t bg-background">
-            <nav className="flex flex-col p-2 gap-1">
+          <div style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--background)' }}>
+            <nav style={{ display: 'flex', flexDirection: 'column', padding: '8px', gap: '4px' }}>
               {NAV_ITEMS.map((item) => {
                 const isActive = location === item.path
                 const Icon = item.icon
@@ -116,11 +120,11 @@ export function ResponsiveNav() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background">
-      <div className="flex items-center justify-between gap-4 p-3">
-        <div className="flex items-center gap-4">
-          <span className="font-semibold">Pironman5 Lite</span>
-          <nav className="flex items-center gap-1">
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '12px', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
+          <span style={{ fontWeight: 600 }}>Pironman5 Lite</span>
+          <nav style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '4px' }}>
             {NAV_ITEMS.map((item) => {
               const isActive = location === item.path
               const Icon = item.icon
@@ -140,7 +144,7 @@ export function ResponsiveNav() {
             })}
           </nav>
         </div>
-        <ThemeToggle />
+        <ThemeToggleButton />
       </div>
     </header>
   )

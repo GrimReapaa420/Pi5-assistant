@@ -1,0 +1,74 @@
+name: "Pironman5 Lite"
+version: "1.0.0"
+slug: "pironman5_lite"
+description: "Lightweight hardware monitoring for Raspberry Pi 5 with Pironman5 case - CPU/GPU temp, fan control, RGB LEDs"
+url: "https://github.com/your-username/pironman5-lite"
+arch:
+  - aarch64
+  - armv7
+startup: services
+boot: auto
+init: false
+homeassistant_api: false
+host_network: true
+
+ports:
+  34001/tcp: 34001
+
+ports_description:
+  34001/tcp: "Web UI"
+
+map:
+  - type: share
+    read_only: false
+
+options:
+  polling_interval: 5
+  web_ui_enabled: true
+  web_ui_port: 34001
+  fan_mode: "balanced"
+  fan_gpio_pin: 6
+  fan_led_pin: 5
+  fan_led_mode: "follow"
+  rgb_enabled: true
+  rgb_color: "#0a1aff"
+  rgb_brightness: 50
+  rgb_style: "breathing"
+  rgb_speed: 50
+  rgb_led_count: 4
+  oled_enabled: true
+  oled_rotation: 0
+  oled_sleep_enabled: false
+  oled_sleep_timeout: 10
+  temperature_unit: "C"
+  debug_level: "INFO"
+
+schema:
+  polling_interval: int(1,60)
+  web_ui_enabled: bool
+  web_ui_port: port
+  fan_mode: list(always_on|performance|cool|balanced|quiet)
+  fan_gpio_pin: int
+  fan_led_pin: int
+  fan_led_mode: list(off|follow|reverse)
+  rgb_enabled: bool
+  rgb_color: str
+  rgb_brightness: int(0,100)
+  rgb_style: list(solid|breathing|flow|rainbow|hue_cycle)
+  rgb_speed: int(1,100)
+  rgb_led_count: int(1,16)
+  oled_enabled: bool
+  oled_rotation: list(0|90|180|270)
+  oled_sleep_enabled: bool
+  oled_sleep_timeout: int(1,60)
+  temperature_unit: list(C|F)
+  debug_level: list(DEBUG|INFO|WARNING|ERROR)
+
+privileged:
+  - SYS_RAWIO
+
+devices:
+  - /dev/mem
+  - /dev/gpiomem
+  - /dev/spidev0.0
+  - /dev/i2c-1

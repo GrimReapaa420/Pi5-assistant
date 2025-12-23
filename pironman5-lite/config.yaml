@@ -2,7 +2,7 @@ name: "Pironman5 Lite"
 version: "1.0.0"
 slug: "pironman5_lite"
 description: "Lightweight hardware monitoring for Raspberry Pi 5 with Pironman5 case - CPU/GPU temp, fan control, RGB LEDs"
-url: "https://github.com/GrimReapaa420/pironman5-lite"
+url: "https://github.com/your-username/pironman5-lite"
 arch:
   - aarch64
   - armv7
@@ -12,11 +12,10 @@ init: false
 homeassistant_api: false
 host_network: true
 
-ports:
-  34001/tcp: 34001
-
-ports_description:
-  34001/tcp: "Web UI"
+ingress: true
+ingress_port: 5000
+panel_icon: mdi:raspberry-pi
+panel_title: Pironman5
 
 map:
   - type: share
@@ -25,7 +24,6 @@ map:
 options:
   polling_interval: 5
   web_ui_enabled: true
-  web_ui_port: 34001
   fan_mode: "balanced"
   fan_gpio_pin: 6
   fan_led_pin: 5
@@ -46,7 +44,6 @@ options:
 schema:
   polling_interval: int(1,60)
   web_ui_enabled: bool
-  web_ui_port: port
   fan_mode: list(always_on|performance|cool|balanced|quiet)
   fan_gpio_pin: int
   fan_led_pin: int

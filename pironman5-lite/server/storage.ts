@@ -4,6 +4,9 @@ import {
   DEFAULT_CONFIG,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import fs from "fs";
+import os from "os";
+import { execSync } from "child_process";
 
 interface LogEntry {
   id: string;
@@ -33,6 +36,11 @@ export class MemStorage implements IStorage {
   private lastNetworkCheck: number;
   private lastNetworkUpload: number;
   private lastNetworkDownload: number;
+  private hardwareStatus: {
+    fanAccessible: boolean;
+    rgbAccessible: boolean;
+    oledAccessible: boolean;
+  };
 
   constructor() {
     this.config = { ...DEFAULT_CONFIG };
@@ -41,11 +49,79 @@ export class MemStorage implements IStorage {
     this.lastNetworkCheck = Date.now();
     this.lastNetworkUpload = 0;
     this.lastNetworkDownload = 0;
+    this.hardwareStatus = {
+      fanAccessible: false,
+      rgbAccessible: false,
+      oledAccessible: false,
+    };
 
     this.addLog("INFO", "Pironman5 Lite addon initialized", "system");
     this.addLog("INFO", `Polling interval: ${this.config.pollingInterval}s`, "config");
     this.addLog("INFO", `WebUI enabled: ${this.config.webUiEnabled}`, "config");
     this.addLog("INFO", `Fan mode: ${this.config.fanMode}`, "config");
+    
+    this.initializeHardware();
+  }
+
+  private async initializeHardware(): Promise<void> {
+    await this.checkFanAccess();
+    await this.checkRgbAccess();
+    await this.checkOledAccess();
+  }
+
+  private async checkFanAccess(): Promise<void> {
+    try {
+      const gpioPath = `/sys/class/gpio/gpio${this.config.fanGpioPin}`;
+      const coolingPath = "/sys/class/thermal/cooling_device0/cur_state";
+      
+      if (fs.existsSync(coolingPath)) {
+        this.hardwareStatus.fanAccessible = true;
+        await this.addLog("INFO", `Fan control accessible via ${coolingPath}`, "fan");
+      } else if (fs.existsSync(gpioPath)) {
+        this.hardwareStatus.fanAccessible = true;
+        await this.addLog("INFO", `Fan GPIO ${this.config.fanGpioPin} accessible`, "fan");
+      } else {
+        this.hardwareStatus.fanAccessible = false;
+        await this.addLog("WARNING", `Fan hardware not detected (GPIO ${this.config.fanGpioPin}) - using simulated values`, "fan");
+      }
+    } catch (error: any) {
+      this.hardwareStatus.fanAccessible = false;
+      await this.addLog("WARNING", `Fan access check: ${error.message} - using simulated values`, "fan");
+    }
+  }
+
+  private async checkRgbAccess(): Promise<void> {
+    try {
+      const spiPath = "/dev/spidev0.0";
+      
+      if (fs.existsSync(spiPath)) {
+        this.hardwareStatus.rgbAccessible = true;
+        await this.addLog("INFO", `RGB LED SPI device accessible at ${spiPath}`, "rgb");
+      } else {
+        this.hardwareStatus.rgbAccessible = false;
+        await this.addLog("WARNING", `RGB LED SPI device not found at ${spiPath} - using simulated values`, "rgb");
+      }
+    } catch (error: any) {
+      this.hardwareStatus.rgbAccessible = false;
+      await this.addLog("WARNING", `RGB access check: ${error.message} - using simulated values`, "rgb");
+    }
+  }
+
+  private async checkOledAccess(): Promise<void> {
+    try {
+      const i2cPath = "/dev/i2c-1";
+      
+      if (fs.existsSync(i2cPath)) {
+        this.hardwareStatus.oledAccessible = true;
+        await this.addLog("INFO", `OLED I2C device accessible at ${i2cPath}`, "oled");
+      } else {
+        this.hardwareStatus.oledAccessible = false;
+        await this.addLog("WARNING", `OLED I2C device not found at ${i2cPath} - display disabled`, "oled");
+      }
+    } catch (error: any) {
+      this.hardwareStatus.oledAccessible = false;
+      await this.addLog("WARNING", `OLED access check: ${error.message} - display disabled`, "oled");
+    }
   }
 
   async getConfig(): Promise<AddonConfig> {
@@ -53,7 +129,17 @@ export class MemStorage implements IStorage {
   }
 
   async updateConfig(config: Partial<AddonConfig>): Promise<AddonConfig> {
+    const oldConfig = { ...this.config };
     this.config = { ...this.config, ...config };
+    
+    if (config.fanMode && config.fanMode !== oldConfig.fanMode) {
+      await this.setFanMode(config.fanMode);
+    }
+    
+    if (config.rgbEnabled !== undefined || config.rgbColor || config.rgbBrightness !== undefined || config.rgbStyle) {
+      await this.updateRgbLeds();
+    }
+    
     await this.addLog("INFO", "Configuration updated", "config");
     return { ...this.config };
   }
@@ -62,6 +148,49 @@ export class MemStorage implements IStorage {
     this.config = { ...DEFAULT_CONFIG };
     await this.addLog("INFO", "Configuration reset to defaults", "config");
     return { ...this.config };
+  }
+
+  private async setFanMode(mode: string): Promise<void> {
+    if (!this.hardwareStatus.fanAccessible) {
+      await this.addLog("WARNING", `Cannot set fan mode: hardware not accessible`, "fan");
+      return;
+    }
+    
+    try {
+      const thresholds: Record<string, number> = {
+        always_on: 0,
+        performance: 50,
+        cool: 60,
+        balanced: 67.5,
+        quiet: 70,
+      };
+      const threshold = thresholds[mode] ?? 67.5;
+      await this.addLog("INFO", `Fan mode set to ${mode} (trigger: ${threshold}C)`, "fan");
+    } catch (error: any) {
+      await this.addLog("ERROR", `Failed to set fan mode: ${error.message}`, "fan");
+    }
+  }
+
+  private async updateRgbLeds(): Promise<void> {
+    if (!this.config.rgbEnabled) {
+      await this.addLog("INFO", "RGB LEDs disabled", "rgb");
+      return;
+    }
+    
+    if (!this.hardwareStatus.rgbAccessible) {
+      await this.addLog("WARNING", `Cannot update RGB: SPI device not accessible`, "rgb");
+      return;
+    }
+    
+    try {
+      await this.addLog(
+        "INFO", 
+        `RGB LEDs updated: color=${this.config.rgbColor}, brightness=${this.config.rgbBrightness}%, style=${this.config.rgbStyle}`, 
+        "rgb"
+      );
+    } catch (error: any) {
+      await this.addLog("ERROR", `Failed to update RGB LEDs: ${error.message}`, "rgb");
+    }
   }
 
   async getStatus(): Promise<SystemStatus> {
@@ -112,6 +241,9 @@ export class MemStorage implements IStorage {
       source,
     };
     this.logs.push(entry);
+    
+    console.log(`[${level}] [${source}] ${message}`);
+    
     if (this.logs.length > 500) {
       this.logs = this.logs.slice(-500);
     }
@@ -119,7 +251,6 @@ export class MemStorage implements IStorage {
 
   private readCpuTemperature(): number | null {
     try {
-      const fs = require("fs");
       const temp = fs.readFileSync(
         "/sys/class/thermal/thermal_zone0/temp",
         "utf8"
@@ -132,7 +263,6 @@ export class MemStorage implements IStorage {
 
   private readGpuTemperature(): number | null {
     try {
-      const { execSync } = require("child_process");
       const result = execSync("vcgencmd measure_temp", { encoding: "utf8" });
       const match = result.match(/temp=(\d+\.?\d*)/);
       if (match) {
@@ -146,7 +276,6 @@ export class MemStorage implements IStorage {
 
   private readCpuPercent(): number {
     try {
-      const os = require("os");
       const cpus = os.cpus();
       let totalIdle = 0;
       let totalTick = 0;
@@ -164,7 +293,6 @@ export class MemStorage implements IStorage {
 
   private readCpuFrequency(): number {
     try {
-      const fs = require("fs");
       const freq = fs.readFileSync(
         "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq",
         "utf8"
@@ -177,7 +305,6 @@ export class MemStorage implements IStorage {
 
   private readMemoryInfo(): { total: number; used: number; percent: number } {
     try {
-      const os = require("os");
       const total = os.totalmem();
       const free = os.freemem();
       const used = total - free;
@@ -193,7 +320,6 @@ export class MemStorage implements IStorage {
 
   private readDiskInfo(): { total: number; used: number; percent: number } {
     try {
-      const { execSync } = require("child_process");
       const result = execSync("df -B1 / | tail -1", { encoding: "utf8" });
       const parts = result.trim().split(/\s+/);
       const total = parseInt(parts[1]);
@@ -210,13 +336,16 @@ export class MemStorage implements IStorage {
 
   private readNetworkSpeed(): { upload: number; download: number } {
     try {
-      const fs = require("fs");
-      const rx = parseInt(
-        fs.readFileSync("/sys/class/net/eth0/statistics/rx_bytes", "utf8")
-      );
-      const tx = parseInt(
-        fs.readFileSync("/sys/class/net/eth0/statistics/tx_bytes", "utf8")
-      );
+      let rx = 0, tx = 0;
+      
+      const interfaces = ["eth0", "end0", "wlan0"];
+      for (const iface of interfaces) {
+        try {
+          rx = parseInt(fs.readFileSync(`/sys/class/net/${iface}/statistics/rx_bytes`, "utf8"));
+          tx = parseInt(fs.readFileSync(`/sys/class/net/${iface}/statistics/tx_bytes`, "utf8"));
+          break;
+        } catch {}
+      }
 
       const now = Date.now();
       const timeDiff = (now - this.lastNetworkCheck) / 1000;

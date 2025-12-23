@@ -1,9 +1,11 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-// Get base path for API calls (handles HA ingress with relative paths)
+// Get base path for API calls (handles HA ingress)
+// Uses document.baseURI to resolve relative to the HTML base, not current route
 function getApiUrl(path: string): string {
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  return `./${cleanPath}`;
+  // Use document.baseURI to get the correct base regardless of current route
+  return new URL(cleanPath, document.baseURI).href;
 }
 
 async function throwIfResNotOk(res: Response) {

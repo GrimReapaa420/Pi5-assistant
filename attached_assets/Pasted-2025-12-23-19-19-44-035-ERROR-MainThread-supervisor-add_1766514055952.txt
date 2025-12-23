@@ -1,0 +1,129 @@
+2025-12-23 19:19:44.035 ERROR (MainThread) [supervisor.addons.addon] Could not build image for addon 14ef3a5d_pironman5_lite: Can't build 14ef3a5d/aarch64-addon-pironman5_lite:1.0.0: Docker build failed for 14ef3a5d/aarch64-addon-pironman5_lite:1.0.0 (exit code 1). Build output:
+#0 building with "default" instance using docker driver
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 331B done
+#1 WARN: InvalidDefaultArgInFrom: Default value for ARG ${BUILD_FROM} results in empty or invalid base image name (line 2)
+#1 DONE 0.0s
+#2 [internal] load metadata for ghcr.io/home-assistant/aarch64-base:latest
+#2 DONE 1.0s
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+#4 [internal] load build context
+#4 transferring context: 5.58kB done
+#4 DONE 0.0s
+#5 [1/9] FROM ghcr.io/home-assistant/aarch64-base:latest@sha256:62a1de7b788e94f7d0978d4080df6f8bca56b749dcdd8e382d8ada08aa8e8c59
+#5 resolve ghcr.io/home-assistant/aarch64-base:latest@sha256:62a1de7b788e94f7d0978d4080df6f8bca56b749dcdd8e382d8ada08aa8e8c59 done
+#5 sha256:62a1de7b788e94f7d0978d4080df6f8bca56b749dcdd8e382d8ada08aa8e8c59 1.15kB / 1.15kB done
+#5 sha256:f265d2995aeaee6081ccca71c7be530f7b8d72ebe6bd6a75c398c8258e7d0b19 5.25kB / 5.25kB done
+#5 sha256:0bd713040ebbdef7247f70b0753f8fb2f410e8eb358e95af409a8412b9847d78 0B / 4.20MB 0.1s
+#5 sha256:ed71e94857ddfccb7c4fab5b2e28f7fbad93889f42a4157ed30bda0416965400 0B / 110B 0.1s
+#5 sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c 0B / 15.93MB 0.1s
+#5 extracting sha256:0bd713040ebbdef7247f70b0753f8fb2f410e8eb358e95af409a8412b9847d78
+#5 sha256:0bd713040ebbdef7247f70b0753f8fb2f410e8eb358e95af409a8412b9847d78 4.20MB / 4.20MB 0.3s done
+#5 sha256:825cacd935404c36de51c48aa643dd3ed540b4fbac7954e28e83af98e32fa7eb 0B / 248B 0.3s
+#5 sha256:ed71e94857ddfccb7c4fab5b2e28f7fbad93889f42a4157ed30bda0416965400 110B / 110B 0.3s done
+#5 sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c 3.15MB / 15.93MB 0.5s
+#5 extracting sha256:0bd713040ebbdef7247f70b0753f8fb2f410e8eb358e95af409a8412b9847d78 0.1s done
+#5 extracting sha256:ed71e94857ddfccb7c4fab5b2e28f7fbad93889f42a4157ed30bda0416965400 done
+#5 sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c 9.44MB / 15.93MB 0.6s
+#5 sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c 14.68MB / 15.93MB 0.7s
+#5 sha256:825cacd935404c36de51c48aa643dd3ed540b4fbac7954e28e83af98e32fa7eb 248B / 248B 0.5s done
+#5 extracting sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c
+#5 sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c 15.93MB / 15.93MB 0.7s done
+#5 extracting sha256:fbd93cf10644e923b22ee729b5ad373f6fece0091ee871454c7d4dd7cae06d0c 0.5s done
+#5 extracting sha256:825cacd935404c36de51c48aa643dd3ed540b4fbac7954e28e83af98e32fa7eb
+#5 extracting sha256:825cacd935404c36de51c48aa643dd3ed540b4fbac7954e28e83af98e32fa7eb done
+#5 DONE 1.4s
+#6 [2/9] RUN apk add --no-cache     nodejs     npm     python3     py3-pip     i2c-tools     spi-tools
+#6 1.410 ( 1/28) Installing i2c-tools (4.4-r1)
+#6 1.447 ( 2/28) Installing ada-libs (3.3.0-r0)
+#6 1.484 ( 3/28) Installing icu-data-en (76.1-r1)
+#6 1.583   Executing icu-data-en-76.1-r1.post-install
+#6 1.588   * 
+#6 1.588   * If you need ICU with non-English locales and legacy charset support, install
+#6 1.588   * package icu-data-full.
+#6 1.588   * 
+#6 1.589 ( 4/28) Installing icu-libs (76.1-r1)
+#6 1.718 ( 5/28) Installing simdjson (3.12.0-r0)
+#6 1.739 ( 6/28) Installing simdutf (7.5.0-r0)
+#6 1.764 ( 7/28) Installing sqlite-libs (3.51.1-r0)
+#6 1.819 ( 8/28) Installing nodejs (24.11.1-r0)
+#6 2.325 ( 9/28) Installing npm (11.6.3-r0)
+#6 2.543 (10/28) Installing libbz2 (1.0.8-r6)
+#6 2.562 (11/28) Installing libexpat (2.7.3-r0)
+#6 2.582 (12/28) Installing libffi (3.5.2-r0)
+#6 2.600 (13/28) Installing gdbm (1.26-r0)
+#6 2.618 (14/28) Installing mpdecimal (4.0.1-r0)
+#6 2.637 (15/28) Installing libpanelw (6.5_p20251123-r0)
+#6 2.655 (16/28) Installing python3 (3.12.12-r0)
+#6 2.945 (17/28) Installing python3-pycache-pyc0 (3.12.12-r0)
+#6 3.118 (18/28) Installing pyc (3.12.12-r0)
+#6 3.118 (19/28) Installing py3-setuptools-pyc (80.9.0-r2)
+#6 3.209 (20/28) Installing py3-pip-pyc (25.1.1-r1)
+#6 3.321 (21/28) Installing py3-packaging-pyc (25.0-r0)
+#6 3.342 (22/28) Installing python3-pyc (3.12.12-r0)
+#6 3.342 (23/28) Installing py3-parsing (3.2.3-r0)
+#6 3.370 (24/28) Installing py3-parsing-pyc (3.2.3-r0)
+#6 3.396 (25/28) Installing py3-packaging (25.0-r0)
+#6 3.424 (26/28) Installing py3-setuptools (80.9.0-r2)
+#6 3.528 (27/28) Installing py3-pip (25.1.1-r1)
+#6 3.634 (28/28) Installing spi-tools (1.0.2-r0)
+#6 3.655 Executing busybox-1.37.0-r29.trigger
+#6 3.677 OK: 153 MiB in 79 packages
+#6 DONE 4.3s
+#7 [3/9] WORKDIR /app
+#7 DONE 0.0s
+#8 [4/9] COPY package*.json ./
+#8 DONE 0.0s
+#9 [5/9] RUN npm ci --only=production
+#9 0.374 npm warn config only Use `--omit=dev` to omit dev dependencies from the install.
+#9 0.971 npm error code EUSAGE
+#9 0.980 npm error
+#9 0.980 npm error The `npm ci` command can only install with an existing package-lock.json or
+#9 0.980 npm error npm-shrinkwrap.json with lockfileVersion >= 1. Run an install with npm@5 or
+#9 0.980 npm error later to generate a package-lock.json file, then try again.
+#9 0.980 npm error
+#9 0.980 npm error Clean install a project
+#9 0.980 npm error
+#9 0.980 npm error Usage:
+#9 0.980 npm error npm ci
+#9 0.980 npm error
+#9 0.980 npm error Options:
+#9 0.980 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#9 0.980 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+#9 0.980 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+#9 0.980 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+#9 0.980 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#9 0.980 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#9 0.980 npm error [--workspaces] [--include-workspace-root] [--install-links]
+#9 0.980 npm error
+#9 0.980 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#9 0.980 npm error
+#9 0.980 npm error Run "npm help ci" for more info
+#9 0.986 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-12-23T18_19_42_915Z-debug-0.log
+#9 ERROR: process "/bin/ash -o pipefail -c npm ci --only=production" did not complete successfully: exit code: 1
+------
+ > [5/9] RUN npm ci --only=production:
+0.980 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+0.980 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+0.980 npm error [--no-bin-links] [--no-fund] [--dry-run]
+0.980 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+0.980 npm error [--workspaces] [--include-workspace-root] [--install-links]
+0.980 npm error
+0.980 npm error aliases: clean-install, ic, install-clean, isntall-clean
+0.980 npm error
+0.980 npm error Run "npm help ci" for more info
+0.986 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-12-23T18_19_42_915Z-debug-0.log
+------
+ 1 warning found (use docker --debug to expand):
+ - InvalidDefaultArgInFrom: Default value for ARG ${BUILD_FROM} results in empty or invalid base image name (line 2)
+Dockerfile:15
+--------------------
+  13 |     
+  14 |     COPY package*.json ./
+  15 | >>> RUN npm ci --only=production
+  16 |     
+  17 |     COPY . .
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/ash -o pipefail -c npm ci --only=production" did not complete successfully: exit code: 1

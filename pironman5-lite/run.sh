@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bashio
 
-CONFIG_PATH=/data/options.json
+bashio::log.info "Starting Pironman5 Lite..."
 
 export POLLING_INTERVAL=$(bashio::config 'polling_interval')
 export WEB_UI_ENABLED=$(bashio::config 'web_ui_enabled')
@@ -21,11 +21,12 @@ export OLED_SLEEP_ENABLED=$(bashio::config 'oled_sleep_enabled')
 export OLED_SLEEP_TIMEOUT=$(bashio::config 'oled_sleep_timeout')
 export TEMPERATURE_UNIT=$(bashio::config 'temperature_unit')
 export DEBUG_LEVEL=$(bashio::config 'debug_level')
+export NODE_ENV=production
+export PORT=${WEB_UI_PORT}
 
-bashio::log.info "Starting Pironman5 Lite..."
 bashio::log.info "Polling interval: ${POLLING_INTERVAL}s"
-bashio::log.info "Web UI enabled: ${WEB_UI_ENABLED}"
+bashio::log.info "Web UI: ${WEB_UI_ENABLED} on port ${WEB_UI_PORT}"
 bashio::log.info "Fan mode: ${FAN_MODE}"
 
 cd /app
-exec node dist/server/index.js
+exec npm run dev

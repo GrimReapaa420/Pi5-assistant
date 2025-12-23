@@ -1,0 +1,73 @@
+2025-12-23 19:24:03.101 ERROR (MainThread) [supervisor.addons.addon] Could not build image for addon 14ef3a5d_pironman5_lite: Can't build 14ef3a5d/aarch64-addon-pironman5_lite:1.0.0: Docker build failed for 14ef3a5d/aarch64-addon-pironman5_lite:1.0.0 (exit code 1). Build output:
+#0 building with "default" instance using docker driver
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 331B done
+#1 WARN: InvalidDefaultArgInFrom: Default value for ARG ${BUILD_FROM} results in empty or invalid base image name (line 2)
+#1 DONE 0.0s
+#2 [internal] load metadata for ghcr.io/home-assistant/aarch64-base:latest
+#2 DONE 0.5s
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+#4 [1/9] FROM ghcr.io/home-assistant/aarch64-base:latest@sha256:62a1de7b788e94f7d0978d4080df6f8bca56b749dcdd8e382d8ada08aa8e8c59
+#4 DONE 0.0s
+#5 [internal] load build context
+#5 transferring context: 5.58kB done
+#5 DONE 0.0s
+#6 [2/9] RUN apk add --no-cache     nodejs     npm     python3     py3-pip     i2c-tools     spi-tools
+#6 CACHED
+#7 [3/9] WORKDIR /app
+#7 CACHED
+#8 [4/9] COPY package*.json ./
+#8 CACHED
+#9 [5/9] RUN npm ci --only=production
+#9 0.434 npm warn config only Use `--omit=dev` to omit dev dependencies from the install.
+#9 1.070 npm error code EUSAGE
+#9 1.076 npm error
+#9 1.076 npm error The `npm ci` command can only install with an existing package-lock.json or
+#9 1.076 npm error npm-shrinkwrap.json with lockfileVersion >= 1. Run an install with npm@5 or
+#9 1.076 npm error later to generate a package-lock.json file, then try again.
+#9 1.076 npm error
+#9 1.076 npm error Clean install a project
+#9 1.076 npm error
+#9 1.076 npm error Usage:
+#9 1.076 npm error npm ci
+#9 1.076 npm error
+#9 1.076 npm error Options:
+#9 1.076 npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+#9 1.076 npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+#9 1.076 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+#9 1.076 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+#9 1.076 npm error [--no-bin-links] [--no-fund] [--dry-run]
+#9 1.076 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+#9 1.076 npm error [--workspaces] [--include-workspace-root] [--install-links]
+#9 1.076 npm error
+#9 1.076 npm error aliases: clean-install, ic, install-clean, isntall-clean
+#9 1.076 npm error
+#9 1.076 npm error Run "npm help ci" for more info
+#9 1.080 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-12-23T18_24_02_010Z-debug-0.log
+#9 ERROR: process "/bin/ash -o pipefail -c npm ci --only=production" did not complete successfully: exit code: 1
+------
+ > [5/9] RUN npm ci --only=production:
+1.076 npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+1.076 npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+1.076 npm error [--no-bin-links] [--no-fund] [--dry-run]
+1.076 npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+1.076 npm error [--workspaces] [--include-workspace-root] [--install-links]
+1.076 npm error
+1.076 npm error aliases: clean-install, ic, install-clean, isntall-clean
+1.076 npm error
+1.076 npm error Run "npm help ci" for more info
+1.080 npm error A complete log of this run can be found in: /root/.npm/_logs/2025-12-23T18_24_02_010Z-debug-0.log
+------
+ 1 warning found (use docker --debug to expand):
+ - InvalidDefaultArgInFrom: Default value for ARG ${BUILD_FROM} results in empty or invalid base image name (line 2)
+Dockerfile:15
+--------------------
+  13 |     
+  14 |     COPY package*.json ./
+  15 | >>> RUN npm ci --only=production
+  16 |     
+  17 |     COPY . .
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/ash -o pipefail -c npm ci --only=production" did not complete successfully: exit code: 1

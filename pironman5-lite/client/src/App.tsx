@@ -37,20 +37,11 @@ function App() {
   };
 
   // Get base path from current location for HA ingress support
-  // In HA ingress, URL is like /api/hassio_ingress/<token>/
-  // We need to tell wouter to use this as the base
   const basePath = useMemo(() => {
-    // Check if we're in an ingress context by looking at the path
     const path = window.location.pathname;
-    // Match /api/hassio_ingress/<token>/ pattern
     const match = path.match(/^(\/api\/hassio_ingress\/[^/]+)/);
     if (match) {
       return match[1];
-    }
-    // Also check for trailing paths like /api/hassio_ingress/<token>/config
-    const fullMatch = path.match(/^(\/api\/hassio_ingress\/[^/]+)\/?.*/);
-    if (fullMatch) {
-      return fullMatch[1];
     }
     return "";
   }, []);

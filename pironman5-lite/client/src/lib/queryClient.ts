@@ -4,7 +4,6 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 // Uses document.baseURI to resolve relative to the HTML base, not current route
 function getApiUrl(path: string): string {
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  // Use document.baseURI to get the correct base regardless of current route
   return new URL(cleanPath, document.baseURI).href;
 }
 

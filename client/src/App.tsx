@@ -39,9 +39,30 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <WouterRouter base={basePath}>
-            <div className="flex flex-col min-h-[100dvh] bg-background text-foreground">
+            <div 
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                minHeight: '100vh',
+                height: '100%',
+                width: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              }}
+              className="bg-background text-foreground"
+            >
               <ResponsiveNav />
-              <main className="flex-1 overflow-auto p-4 md:p-6">
+              <main 
+                style={{ 
+                  flex: 1, 
+                  overflow: 'auto',
+                  padding: '16px',
+                  minHeight: 0,
+                }}
+              >
                 <Routes />
               </main>
             </div>

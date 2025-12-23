@@ -15,6 +15,7 @@ RUN npm install
 COPY client ./client
 COPY server ./server
 COPY shared ./shared
+COPY script ./script
 COPY tsconfig.json vite.config.ts drizzle.config.ts ./
 
 RUN npm run build

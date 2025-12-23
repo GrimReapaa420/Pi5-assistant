@@ -65,4 +65,4 @@ bashio::log.info "Starting web server on port ${PORT}..."
 bashio::log.info "=========================================="
 
 cd /app
-exec node dist/index.js
+exec node --max-old-space-size=64 dist/index.cjs

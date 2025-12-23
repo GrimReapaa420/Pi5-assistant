@@ -182,28 +182,26 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <>
-        {/* Mobile overlay backdrop */}
-        {openMobile && (
-          <div 
-            className="fixed inset-0 z-40 bg-black/50"
-            onClick={() => setOpenMobile(false)}
-          />
-        )}
-        {/* Mobile sidebar drawer - simple CSS-based, no portals */}
-        <div
+      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+        <SheetContent
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className={cn(
-            "fixed inset-y-0 left-0 z-50 w-[18rem] bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out",
-            openMobile ? "translate-x-0" : "-translate-x-full"
-          )}
-          style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
+          className="bg-sidebar text-sidebar-foreground w-[--sidebar-width] p-0 [&>button]:hidden"
+          style={
+            {
+              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+            } as React.CSSProperties
+          }
+          side={side}
         >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Sidebar</SheetTitle>
+            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+          </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
-        </div>
-      </>
+        </SheetContent>
+      </Sheet>
     )
   }
 

@@ -37,9 +37,13 @@ export class MemStorage implements IStorage {
   private lastNetworkUpload: number;
   private lastNetworkDownload: number;
   private hardwareStatus: {
+    cpuTempAccessible: boolean;
+    gpuTempAccessible: boolean;
+    cpuFreqAccessible: boolean;
     fanAccessible: boolean;
     rgbAccessible: boolean;
     oledAccessible: boolean;
+    networkAccessible: boolean;
   };
 
   constructor() {
@@ -50,9 +54,13 @@ export class MemStorage implements IStorage {
     this.lastNetworkUpload = 0;
     this.lastNetworkDownload = 0;
     this.hardwareStatus = {
+      cpuTempAccessible: false,
+      gpuTempAccessible: false,
+      cpuFreqAccessible: false,
       fanAccessible: false,
       rgbAccessible: false,
       oledAccessible: false,
+      networkAccessible: false,
     };
 
     this.addLog("INFO", "Pironman5 Lite addon initialized", "system");
@@ -64,9 +72,72 @@ export class MemStorage implements IStorage {
   }
 
   private async initializeHardware(): Promise<void> {
+    await this.checkCpuTempAccess();
+    await this.checkGpuTempAccess();
+    await this.checkCpuFreqAccess();
+    await this.checkNetworkAccess();
     await this.checkFanAccess();
     await this.checkRgbAccess();
     await this.checkOledAccess();
+  }
+
+  private async checkCpuTempAccess(): Promise<void> {
+    try {
+      const path = "/sys/class/thermal/thermal_zone0/temp";
+      if (fs.existsSync(path)) {
+        fs.readFileSync(path, "utf8");
+        this.hardwareStatus.cpuTempAccessible = true;
+        await this.addLog("INFO", `CPU temperature sensor accessible`, "hardware");
+      } else {
+        this.hardwareStatus.cpuTempAccessible = false;
+        await this.addLog("WARNING", `CPU temperature sensor not found`, "hardware");
+      }
+    } catch (error: any) {
+      this.hardwareStatus.cpuTempAccessible = false;
+      await this.addLog("WARNING", `CPU temperature: ${error.message}`, "hardware");
+    }
+  }
+
+  private async checkGpuTempAccess(): Promise<void> {
+    try {
+      execSync("vcgencmd measure_temp", { encoding: "utf8" });
+      this.hardwareStatus.gpuTempAccessible = true;
+      await this.addLog("INFO", `GPU temperature (vcgencmd) accessible`, "hardware");
+    } catch (error: any) {
+      this.hardwareStatus.gpuTempAccessible = false;
+      await this.addLog("WARNING", `GPU temperature: vcgencmd not available`, "hardware");
+    }
+  }
+
+  private async checkCpuFreqAccess(): Promise<void> {
+    try {
+      const path = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq";
+      if (fs.existsSync(path)) {
+        this.hardwareStatus.cpuFreqAccessible = true;
+        await this.addLog("INFO", `CPU frequency sensor accessible`, "hardware");
+      } else {
+        this.hardwareStatus.cpuFreqAccessible = false;
+        await this.addLog("WARNING", `CPU frequency sensor not found`, "hardware");
+      }
+    } catch (error: any) {
+      this.hardwareStatus.cpuFreqAccessible = false;
+    }
+  }
+
+  private async checkNetworkAccess(): Promise<void> {
+    const interfaces = ["eth0", "end0", "wlan0"];
+    for (const iface of interfaces) {
+      try {
+        const path = `/sys/class/net/${iface}/statistics/rx_bytes`;
+        if (fs.existsSync(path)) {
+          this.hardwareStatus.networkAccessible = true;
+          await this.addLog("INFO", `Network interface ${iface} accessible`, "hardware");
+          return;
+        }
+      } catch {}
+    }
+    this.hardwareStatus.networkAccessible = false;
+    await this.addLog("WARNING", `No network interfaces found`, "hardware");
   }
 
   private async checkFanAccess(): Promise<void> {
@@ -82,11 +153,11 @@ export class MemStorage implements IStorage {
         await this.addLog("INFO", `Fan GPIO ${this.config.fanGpioPin} accessible`, "fan");
       } else {
         this.hardwareStatus.fanAccessible = false;
-        await this.addLog("WARNING", `Fan hardware not detected (GPIO ${this.config.fanGpioPin}) - using simulated values`, "fan");
+        await this.addLog("WARNING", `Fan hardware not detected (GPIO ${this.config.fanGpioPin})`, "fan");
       }
     } catch (error: any) {
       this.hardwareStatus.fanAccessible = false;
-      await this.addLog("WARNING", `Fan access check: ${error.message} - using simulated values`, "fan");
+      await this.addLog("WARNING", `Fan access check: ${error.message}`, "fan");
     }
   }
 
@@ -99,11 +170,11 @@ export class MemStorage implements IStorage {
         await this.addLog("INFO", `RGB LED SPI device accessible at ${spiPath}`, "rgb");
       } else {
         this.hardwareStatus.rgbAccessible = false;
-        await this.addLog("WARNING", `RGB LED SPI device not found at ${spiPath} - using simulated values`, "rgb");
+        await this.addLog("WARNING", `RGB LED SPI device not found at ${spiPath}`, "rgb");
       }
     } catch (error: any) {
       this.hardwareStatus.rgbAccessible = false;
-      await this.addLog("WARNING", `RGB access check: ${error.message} - using simulated values`, "rgb");
+      await this.addLog("WARNING", `RGB access check: ${error.message}`, "rgb");
     }
   }
 
@@ -116,11 +187,11 @@ export class MemStorage implements IStorage {
         await this.addLog("INFO", `OLED I2C device accessible at ${i2cPath}`, "oled");
       } else {
         this.hardwareStatus.oledAccessible = false;
-        await this.addLog("WARNING", `OLED I2C device not found at ${i2cPath} - display disabled`, "oled");
+        await this.addLog("WARNING", `OLED I2C device not found at ${i2cPath}`, "oled");
       }
     } catch (error: any) {
       this.hardwareStatus.oledAccessible = false;
-      await this.addLog("WARNING", `OLED access check: ${error.message} - display disabled`, "oled");
+      await this.addLog("WARNING", `OLED access check: ${error.message}`, "oled");
     }
   }
 
@@ -218,7 +289,9 @@ export class MemStorage implements IStorage {
       networkUpload: networkSpeed.upload,
       networkDownload: networkSpeed.download,
       fanSpeed,
-      fanState: fanSpeed > 0 ? "on" : "off",
+      fanState: this.hardwareStatus.fanAccessible 
+        ? (fanSpeed !== null && fanSpeed > 0 ? "on" : "off") 
+        : "unavailable",
       uptime,
       timestamp: Date.now(),
     };
@@ -250,6 +323,9 @@ export class MemStorage implements IStorage {
   }
 
   private readCpuTemperature(): number | null {
+    if (!this.hardwareStatus.cpuTempAccessible) {
+      return null;
+    }
     try {
       const temp = fs.readFileSync(
         "/sys/class/thermal/thermal_zone0/temp",
@@ -257,11 +333,14 @@ export class MemStorage implements IStorage {
       );
       return parseFloat(temp) / 1000;
     } catch {
-      return 45 + Math.random() * 15;
+      return null;
     }
   }
 
   private readGpuTemperature(): number | null {
+    if (!this.hardwareStatus.gpuTempAccessible) {
+      return null;
+    }
     try {
       const result = execSync("vcgencmd measure_temp", { encoding: "utf8" });
       const match = result.match(/temp=(\d+\.?\d*)/);
@@ -270,11 +349,11 @@ export class MemStorage implements IStorage {
       }
       return null;
     } catch {
-      return 43 + Math.random() * 12;
+      return null;
     }
   }
 
-  private readCpuPercent(): number {
+  private readCpuPercent(): number | null {
     try {
       const cpus = os.cpus();
       let totalIdle = 0;
@@ -287,11 +366,14 @@ export class MemStorage implements IStorage {
       });
       return Math.round((1 - totalIdle / totalTick) * 100);
     } catch {
-      return 15 + Math.random() * 30;
+      return null;
     }
   }
 
-  private readCpuFrequency(): number {
+  private readCpuFrequency(): number | null {
+    if (!this.hardwareStatus.cpuFreqAccessible) {
+      return null;
+    }
     try {
       const freq = fs.readFileSync(
         "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq",
@@ -299,11 +381,11 @@ export class MemStorage implements IStorage {
       );
       return parseInt(freq) / 1000;
     } catch {
-      return 1500 + Math.random() * 500;
+      return null;
     }
   }
 
-  private readMemoryInfo(): { total: number; used: number; percent: number } {
+  private readMemoryInfo(): { total: number | null; used: number | null; percent: number | null } {
     try {
       const total = os.totalmem();
       const free = os.freemem();
@@ -311,14 +393,11 @@ export class MemStorage implements IStorage {
       const percent = Math.round((used / total) * 100);
       return { total, used, percent };
     } catch {
-      const total = 8 * 1024 * 1024 * 1024;
-      const percent = 35 + Math.random() * 20;
-      const used = total * (percent / 100);
-      return { total, used, percent };
+      return { total: null, used: null, percent: null };
     }
   }
 
-  private readDiskInfo(): { total: number; used: number; percent: number } {
+  private readDiskInfo(): { total: number | null; used: number | null; percent: number | null } {
     try {
       const result = execSync("df -B1 / | tail -1", { encoding: "utf8" });
       const parts = result.trim().split(/\s+/);
@@ -327,14 +406,15 @@ export class MemStorage implements IStorage {
       const percent = parseInt(parts[4]);
       return { total, used, percent };
     } catch {
-      const total = 64 * 1024 * 1024 * 1024;
-      const percent = 25 + Math.random() * 15;
-      const used = total * (percent / 100);
-      return { total, used, percent };
+      return { total: null, used: null, percent: null };
     }
   }
 
-  private readNetworkSpeed(): { upload: number; download: number } {
+  private readNetworkSpeed(): { upload: number | null; download: number | null } {
+    if (!this.hardwareStatus.networkAccessible) {
+      return { upload: null, download: null };
+    }
+    
     try {
       let rx = 0, tx = 0;
       
@@ -362,15 +442,16 @@ export class MemStorage implements IStorage {
         download: download > 0 ? download : 0,
       };
     } catch {
-      return {
-        upload: Math.round(Math.random() * 50000),
-        download: Math.round(Math.random() * 200000),
-      };
+      return { upload: null, download: null };
     }
   }
 
-  private calculateFanSpeed(cpuTemp: number | null): number {
-    if (cpuTemp === null) return 0;
+  private calculateFanSpeed(cpuTemp: number | null): number | null {
+    if (!this.hardwareStatus.fanAccessible) {
+      return null;
+    }
+    
+    if (cpuTemp === null) return null;
 
     const thresholds: Record<string, number> = {
       always_on: 0,

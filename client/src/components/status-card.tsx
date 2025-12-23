@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { AlertCircle } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface StatusCardProps {
@@ -11,6 +12,7 @@ interface StatusCardProps {
   progress?: number;
   trend?: "up" | "down" | "stable";
   status?: "normal" | "warning" | "critical";
+  unavailable?: boolean;
   testId?: string;
 }
 
@@ -22,6 +24,7 @@ export function StatusCard({
   subtitle,
   progress,
   status = "normal",
+  unavailable = false,
   testId,
 }: StatusCardProps) {
   const statusColors = {
@@ -45,27 +48,36 @@ export function StatusCard({
         <div className="text-muted-foreground">{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-baseline gap-1">
-          <span
-            className={`text-3xl font-mono font-semibold ${statusColors[status]}`}
-            data-testid={testId ? `${testId}-value` : undefined}
-          >
-            {value}
-          </span>
-          {unit && (
-            <span className="text-sm text-muted-foreground font-mono">
-              {unit}
-            </span>
-          )}
-        </div>
-        {subtitle && (
-          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
-        )}
-        {progress !== undefined && (
-          <Progress
-            value={progress}
-            className={`h-2 mt-3 ${progressColors[status]}`}
-          />
+        {unavailable ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">Not Available</span>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-1">
+              <span
+                className={`text-3xl font-mono font-semibold ${statusColors[status]}`}
+                data-testid={testId ? `${testId}-value` : undefined}
+              >
+                {value}
+              </span>
+              {unit && (
+                <span className="text-sm text-muted-foreground font-mono">
+                  {unit}
+                </span>
+              )}
+            </div>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+            )}
+            {progress !== undefined && (
+              <Progress
+                value={progress}
+                className={`h-2 mt-3 ${progressColors[status]}`}
+              />
+            )}
+          </>
         )}
       </CardContent>
     </Card>

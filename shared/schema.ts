@@ -3,21 +3,22 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // System Status - read from hardware
+// null values indicate hardware not accessible
 export interface SystemStatus {
   cpuTemperature: number | null;
   gpuTemperature: number | null;
-  cpuPercent: number;
-  cpuFrequency: number;
-  memoryTotal: number;
-  memoryUsed: number;
-  memoryPercent: number;
-  diskTotal: number;
-  diskUsed: number;
-  diskPercent: number;
-  networkUpload: number;
-  networkDownload: number;
-  fanSpeed: number;
-  fanState: 'on' | 'off' | 'auto';
+  cpuPercent: number | null;
+  cpuFrequency: number | null;
+  memoryTotal: number | null;
+  memoryUsed: number | null;
+  memoryPercent: number | null;
+  diskTotal: number | null;
+  diskUsed: number | null;
+  diskPercent: number | null;
+  networkUpload: number | null;
+  networkDownload: number | null;
+  fanSpeed: number | null;
+  fanState: 'on' | 'off' | 'auto' | 'unavailable';
   uptime: number;
   timestamp: number;
 }
@@ -125,9 +126,9 @@ export interface StatusHistoryPoint {
   timestamp: number;
   cpuTemperature: number | null;
   gpuTemperature: number | null;
-  cpuPercent: number;
-  memoryPercent: number;
-  fanSpeed: number;
+  cpuPercent: number | null;
+  memoryPercent: number | null;
+  fanSpeed: number | null;
 }
 
 // Users table (for potential future auth)

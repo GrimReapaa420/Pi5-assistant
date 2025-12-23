@@ -10,6 +10,7 @@ import {
   Clock,
   Palette,
   Monitor,
+  AlertCircle,
 } from "lucide-react";
 import { StatusCard, StatusIndicator } from "@/components/status-card";
 import { MiniChart } from "@/components/mini-chart";
@@ -20,7 +21,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { SystemStatus, AddonConfig } from "@shared/schema";
 import { useState, useEffect } from "react";
 
-function formatBytes(bytes: number): string {
+const NA = "N/A";
+
+function formatBytes(bytes: number | null): string {
+  if (bytes === null) return NA;
   if (bytes === 0) return "0 B";
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
@@ -64,8 +68,8 @@ export default function Dashboard() {
     if (status?.cpuTemperature !== null && status?.cpuTemperature !== undefined) {
       setTempHistory((prev) => [...prev.slice(-29), status.cpuTemperature!]);
     }
-    if (status?.cpuPercent !== undefined) {
-      setCpuHistory((prev) => [...prev.slice(-29), status.cpuPercent]);
+    if (status?.cpuPercent !== null && status?.cpuPercent !== undefined) {
+      setCpuHistory((prev) => [...prev.slice(-29), status.cpuPercent!]);
     }
   }, [status]);
 
@@ -78,10 +82,20 @@ export default function Dashboard() {
   }
 
   const tempUnit = config?.temperatureUnit || "C";
-  const displayTemp = (temp: number | null) => {
-    if (temp === null) return "N/A";
-    if (tempUnit === "F") return Math.round(temp * 1.8 + 32);
-    return Math.round(temp);
+  const displayTemp = (temp: number | null): string => {
+    if (temp === null) return NA;
+    if (tempUnit === "F") return String(Math.round(temp * 1.8 + 32));
+    return String(Math.round(temp));
+  };
+
+  const displayPercent = (value: number | null): string => {
+    if (value === null) return NA;
+    return String(Math.round(value));
+  };
+
+  const displayNumber = (value: number | null): string => {
+    if (value === null) return NA;
+    return String(Math.round(value));
   };
 
   return (
@@ -115,8 +129,9 @@ export default function Dashboard() {
           title="CPU Temperature"
           icon={<Thermometer className="w-5 h-5" />}
           value={displayTemp(status?.cpuTemperature ?? null)}
-          unit={`°${tempUnit}`}
+          unit={status?.cpuTemperature !== null ? `°${tempUnit}` : ""}
           status={getTemperatureStatus(status?.cpuTemperature ?? null)}
+          unavailable={status?.cpuTemperature === null}
           testId="card-cpu-temp"
         />
 
@@ -124,68 +139,87 @@ export default function Dashboard() {
           title="GPU Temperature"
           icon={<Thermometer className="w-5 h-5" />}
           value={displayTemp(status?.gpuTemperature ?? null)}
-          unit={`°${tempUnit}`}
+          unit={status?.gpuTemperature !== null ? `°${tempUnit}` : ""}
           status={getTemperatureStatus(status?.gpuTemperature ?? null)}
+          unavailable={status?.gpuTemperature === null}
           testId="card-gpu-temp"
         />
 
         <StatusCard
           title="CPU Usage"
           icon={<Cpu className="w-5 h-5" />}
-          value={Math.round(status?.cpuPercent ?? 0)}
-          unit="%"
-          progress={status?.cpuPercent}
+          value={displayPercent(status?.cpuPercent ?? null)}
+          unit={status?.cpuPercent !== null ? "%" : ""}
+          progress={status?.cpuPercent ?? undefined}
           status={
-            (status?.cpuPercent ?? 0) >= 90
-              ? "critical"
-              : (status?.cpuPercent ?? 0) >= 75
-                ? "warning"
-                : "normal"
+            status?.cpuPercent === null
+              ? "normal"
+              : (status?.cpuPercent ?? 0) >= 90
+                ? "critical"
+                : (status?.cpuPercent ?? 0) >= 75
+                  ? "warning"
+                  : "normal"
           }
+          unavailable={status?.cpuPercent === null}
           testId="card-cpu-usage"
         />
 
         <StatusCard
           title="Memory Usage"
           icon={<MemoryStick className="w-5 h-5" />}
-          value={Math.round(status?.memoryPercent ?? 0)}
-          unit="%"
-          subtitle={`${formatBytes(status?.memoryUsed ?? 0)} / ${formatBytes(status?.memoryTotal ?? 0)}`}
-          progress={status?.memoryPercent}
-          status={
-            (status?.memoryPercent ?? 0) >= 90
-              ? "critical"
-              : (status?.memoryPercent ?? 0) >= 75
-                ? "warning"
-                : "normal"
+          value={displayPercent(status?.memoryPercent ?? null)}
+          unit={status?.memoryPercent !== null ? "%" : ""}
+          subtitle={
+            status && status.memoryUsed !== null && status.memoryTotal !== null
+              ? `${formatBytes(status.memoryUsed)} / ${formatBytes(status.memoryTotal)}`
+              : undefined
           }
+          progress={status?.memoryPercent ?? undefined}
+          status={
+            status?.memoryPercent === null
+              ? "normal"
+              : (status?.memoryPercent ?? 0) >= 90
+                ? "critical"
+                : (status?.memoryPercent ?? 0) >= 75
+                  ? "warning"
+                  : "normal"
+          }
+          unavailable={status?.memoryPercent === null}
           testId="card-memory"
         />
 
         <StatusCard
           title="Storage"
           icon={<HardDrive className="w-5 h-5" />}
-          value={Math.round(status?.diskPercent ?? 0)}
-          unit="%"
-          subtitle={`${formatBytes(status?.diskUsed ?? 0)} / ${formatBytes(status?.diskTotal ?? 0)}`}
-          progress={status?.diskPercent}
-          status={
-            (status?.diskPercent ?? 0) >= 90
-              ? "critical"
-              : (status?.diskPercent ?? 0) >= 75
-                ? "warning"
-                : "normal"
+          value={displayPercent(status?.diskPercent ?? null)}
+          unit={status?.diskPercent !== null ? "%" : ""}
+          subtitle={
+            status && status.diskUsed !== null && status.diskTotal !== null
+              ? `${formatBytes(status.diskUsed)} / ${formatBytes(status.diskTotal)}`
+              : undefined
           }
+          progress={status?.diskPercent ?? undefined}
+          status={
+            status?.diskPercent === null
+              ? "normal"
+              : (status?.diskPercent ?? 0) >= 90
+                ? "critical"
+                : (status?.diskPercent ?? 0) >= 75
+                  ? "warning"
+                  : "normal"
+          }
+          unavailable={status?.diskPercent === null}
           testId="card-storage"
         />
 
         <StatusCard
           title="Fan Speed"
           icon={<Fan className="w-5 h-5" />}
-          value={status?.fanSpeed ?? 0}
-          unit="%"
-          subtitle={`Mode: ${config?.fanMode || "balanced"}`}
-          progress={status?.fanSpeed}
+          value={status?.fanSpeed !== null && status?.fanSpeed !== undefined ? displayNumber(status.fanSpeed) : NA}
+          unit={status?.fanSpeed !== null ? "%" : ""}
+          subtitle={status?.fanState !== "unavailable" ? `Mode: ${config?.fanMode || "balanced"}` : undefined}
+          progress={status?.fanSpeed ?? undefined}
+          unavailable={status?.fanState === "unavailable"}
           testId="card-fan"
         />
       </div>
@@ -199,21 +233,30 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <MiniChart
-              data={tempHistory}
-              height={80}
-              color={
-                getTemperatureStatus(status?.cpuTemperature ?? null) === "critical"
-                  ? "hsl(var(--destructive))"
-                  : getTemperatureStatus(status?.cpuTemperature ?? null) === "warning"
-                    ? "hsl(40, 100%, 50%)"
-                    : "hsl(var(--chart-1))"
-              }
-            />
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span>30 readings ago</span>
-              <span>Now</span>
-            </div>
+            {tempHistory.length > 0 ? (
+              <>
+                <MiniChart
+                  data={tempHistory}
+                  height={80}
+                  color={
+                    getTemperatureStatus(status?.cpuTemperature ?? null) === "critical"
+                      ? "hsl(var(--destructive))"
+                      : getTemperatureStatus(status?.cpuTemperature ?? null) === "warning"
+                        ? "hsl(40, 100%, 50%)"
+                        : "hsl(var(--chart-1))"
+                  }
+                />
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>30 readings ago</span>
+                  <span>Now</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-20 text-muted-foreground">
+                <AlertCircle className="w-5 h-5 mb-1" />
+                <span className="text-sm">No data available</span>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -225,15 +268,24 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <MiniChart
-              data={cpuHistory}
-              height={80}
-              color="hsl(var(--chart-2))"
-            />
-            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-              <span>30 readings ago</span>
-              <span>Now</span>
-            </div>
+            {cpuHistory.length > 0 ? (
+              <>
+                <MiniChart
+                  data={cpuHistory}
+                  height={80}
+                  color="hsl(var(--chart-2))"
+                />
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>30 readings ago</span>
+                  <span>Now</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-20 text-muted-foreground">
+                <AlertCircle className="w-5 h-5 mb-1" />
+                <span className="text-sm">No data available</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -250,13 +302,13 @@ export default function Dashboard() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Upload</span>
               <span className="font-mono text-sm" data-testid="text-network-upload">
-                {formatBytes(status?.networkUpload ?? 0)}/s
+                {status?.networkUpload !== null ? `${formatBytes(status?.networkUpload ?? 0)}/s` : NA}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Download</span>
               <span className="font-mono text-sm" data-testid="text-network-download">
-                {formatBytes(status?.networkDownload ?? 0)}/s
+                {status?.networkDownload !== null ? `${formatBytes(status?.networkDownload ?? 0)}/s` : NA}
               </span>
             </div>
           </CardContent>
@@ -279,7 +331,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">CPU Freq</span>
               <span className="font-mono text-sm">
-                {Math.round(status?.cpuFrequency ?? 0)} MHz
+                {status?.cpuFrequency !== null ? `${Math.round(status?.cpuFrequency ?? 0)} MHz` : NA}
               </span>
             </div>
           </CardContent>

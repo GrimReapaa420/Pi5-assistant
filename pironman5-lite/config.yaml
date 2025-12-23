@@ -2,7 +2,7 @@ name: "Pironman5 Lite"
 version: "1.0.0"
 slug: "pironman5_lite"
 description: "Lightweight hardware monitoring for Raspberry Pi 5 with Pironman5 case - CPU/GPU temp, fan control, RGB LEDs"
-url: "https://github.com/your-username/pironman5-lite"
+url: "https://github.com/GrimReapaa420/pironman5-lite"
 arch:
   - aarch64
   - armv7

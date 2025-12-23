@@ -16,32 +16,7 @@ import Configuration from "@/pages/configuration";
 import Logs from "@/pages/logs";
 import About from "@/pages/about";
 import NotFound from "@/pages/not-found";
-import { useMemo, useState, useEffect } from "react";
-import { BUILD_INFO } from "@/lib/buildInfo";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-function DebugBanner() {
-  const isMobile = useIsMobile();
-  const [width, setWidth] = useState(0);
-  const [clickCount, setClickCount] = useState(0);
-  
-  useEffect(() => {
-    const update = () => setWidth(document.documentElement.clientWidth);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-  
-  return (
-    <div 
-      className="fixed bottom-0 left-0 right-0 bg-yellow-500 text-black text-xs p-1 z-[9999] font-mono"
-      onClick={() => setClickCount(c => c + 1)}
-      data-testid="debug-banner"
-    >
-      v{BUILD_INFO.version} | W:{width} | Mobile:{isMobile ? "Y" : "N"} | Clicks:{clickCount}
-    </div>
-  );
-}
+import { useMemo } from "react";
 
 function Routes() {
   return (
@@ -91,7 +66,6 @@ function App() {
               </div>
             </SidebarProvider>
             <Toaster />
-            <DebugBanner />
           </WouterRouter>
         </TooltipProvider>
       </ThemeProvider>
